@@ -7,6 +7,9 @@
 
 // includes the resource header so we can use items within
 #include "resourceMaster.h"
+#include "buildingPart.h"
+#include "playerWidget.h"
+#include "objectiveWidget.h"
 #include "playerChar.generated.h"
 
 UCLASS()
@@ -41,15 +44,31 @@ public:
 
 
 	UPROPERTY(EditAnywhere)
-	class UCameraComponent* Camera;
+		class UCameraComponent* Camera;
+
+
+
+
+
+
+
 
 	UFUNCTION()
-		void GiveResources(int amount, FString resourceType);
+		void GiveResources(float amount, FString resourceType);
+
+
+
+
+
+
+
+
+
+
 
 
 	// CREATES resources and inentory
 	// UPROPERTIES make the attributes available in BP
-
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "resources")
 		int Wood;
@@ -63,16 +82,50 @@ public:
 		int Berry;
 
 
+
+
+
+
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+		UobjectiveWidget* objWidget;
+
+	UPROPERTY()
+		float objectsBuild;
+
+	UPROPERTY()
+		float matsCollected;
+
+
+
+
+
+
+
+
 	// Creates the array that takes an INT and string
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "resources")
-		TArray<int> ResourceArray;
+		TArray<int> resourceArray;
 
 
 	UPROPERTY(EditAnywhere, Category = "resources")
 		TArray<FString> ResourceNameArray;
 
 
-protected:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	// Created playerCharacter attributes and stats.
 	// UPROPERTIES make the attributes available in BP
@@ -97,12 +150,73 @@ protected:
 		float runningSpeed;
 
 
-	// END PLAYER ATTRIBUTES/STATS
+		// END PLAYER ATTRIBUTES/STATS
 
 
-	// Calls the functions and takes in a value from the mouse and called it InputValue
+
+
+
+
+
+
+
+	UPROPERTY(EditAnywhere, Category = "HitMarker")
+		UMaterialInterface* hitDecal;
+
+
+
+
+
+
+
+
+		// Building Array to store info and attributes
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Building Supplies")
+		TArray<int> buildingArray;
+
+	UPROPERTY()
+		bool isBuilding;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+		TSubclassOf<AbuildingPart> buildingPartClass;
+
+	UPROPERTY()
+		AbuildingPart* spawnedPart;
+
+
+
+
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		UplayerWidget* playerUI;
+
+
+
+
+
+
+
+
+
+    // Calls the functions and takes in a value from the mouse and called it InputValue
 	void CameraTurn(float InputValue);
 	void CameraUp(float InputValue);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 	// Calls the functions 
@@ -111,25 +225,95 @@ protected:
 	void interact();
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	// Calls the functions and takes in a value from the keyboard and called it InputValue
 	void MoveForward(float InputValue);
 	void MoveRight(float InputValue);
 
 
-	// Set up the timer handle
-	FTimerHandle playerHungerTimer;
 
 
-	//create a timer counter
-	int32 TimerCount = 0;
+
+
+
+
+
+
+
+
+
+
+
+
+
+	// building functions
+	UFUNCTION(BlueprintCallable)
+		void updateResources(float woodAmount, float stoneAmount, FString buildingObject);
+
+
+	UFUNCTION(BlueprintCallable)
+		void spawnBuilding(int buildingID, bool& isSuccess);
+
+	UFUNCTION()
+		void rotateBuilding();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		
+	UFUNCTION(BlueprintCallable)
+		void setHealth(float amount);
+
+	UFUNCTION(BlueprintCallable)
+		void setHunger(float amount);
+
+	UFUNCTION(BlueprintCallable)
+		void setStamina(float amount);
+
+
+
+
+
 
 
 	// calls the timer function
-	void HungerTimer();
+	UFUNCTION(BlueprintCallable)
+		void HungerTimer();
 
 
 	// stops the timer handle when game ends
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	//virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+
 
 };
 

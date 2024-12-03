@@ -9,6 +9,8 @@
 // Gets the character movement component to edit air control
 #include "GameFramework/CharacterMovementComponent.h"
 
+#include "Kismet/GameplayStatics.h"
+
 
 // To have debug messaage appear in agame
 #include "Engine/Engine.h"
@@ -20,41 +22,67 @@ AplayerChar::AplayerChar()
 	PrimaryActorTick.bCanEverTick = true;
 
 
+
+
+
+
+
+
+
+
+
 	// Create and set up camera component
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Player Camera"));
 	Camera->SetupAttachment(GetMesh(), TEXT("head"));
 	Camera->bUsePawnControlRotation = true;
 
 
+
+
+
+
+
+
+
+
+
+
 	// Improve air control for player
 	GetCharacterMovement()->AirControl = 1;
 
 
-	// Initialize the wood, Stone and Berry ints
-	Wood = 0;
-	Stone = 0;
-	Berry = 0;
+
+
 
 
 	// Initialize ResourceNameArray
+	buildingArray.SetNum(3);
+	resourceArray.SetNum(3);
 	ResourceNameArray.SetNum(3);
 	ResourceNameArray[0] = TEXT("Wood");
 	ResourceNameArray[1] = TEXT("Stone");
 	ResourceNameArray[2] = TEXT("Berry");
 
 
-	// Initialize ResourceArray and have each index be equal to the count
-	ResourceArray.SetNum(3);
-	ResourceArray[0] = Wood;
-	ResourceArray[1] = Stone;    
-	ResourceArray[2] = Berry;    
 
 
 
 	// Initialize player attributes/stats
 	Health = 100.0f;
 	Stamina = 100.0f;
-	Hunger = 100.0f;
+
+
+
+
+
+
+
+
+
+
+
+
+	Hunger = 20.0f;
 	walkingSpeed = 600.0f;
 	runningSpeed = 1000.0f;
 
@@ -67,11 +95,36 @@ void AplayerChar::BeginPlay()
 
 	Super::BeginPlay();
 
+	// Set up the timer handle
+	FTimerHandle playerStatsTimer;
+
+	//create a timer counter
+	//int32 TimerCount = 0;
+
 
 	// Set the timer to the player character and triggers every 5 seconds
-	GetWorld()->GetTimerManager().SetTimer(playerHungerTimer, this, &AplayerChar::HungerTimer, 5.0f, true);
+	GetWorld()->GetTimerManager().SetTimer(playerStatsTimer, this, &AplayerChar::HungerTimer, 2.0f, true);
+
+	if (objWidget)
+	{
+		objWidget->updateBuildObj(0.0f);
+		objWidget->updateMatObj(0.0f);
+	}
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 void AplayerChar::Tick(float DeltaTime)
@@ -79,7 +132,36 @@ void AplayerChar::Tick(float DeltaTime)
 
 	Super::Tick(DeltaTime);
 
+	playerUI->updateBars(Health, Hunger, Stamina);
+
+	if (isBuilding)
+	{
+		if (spawnedPart)
+		{
+			FVector StartLocation = Camera->GetComponentLocation();
+			FVector Direction = Camera->GetForwardVector() * 400.0f;
+			FVector EndLocation = StartLocation + Direction;
+			spawnedPart->SetActorLocation(EndLocation);
+		}
+	}
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // This function binds the user input from the keyboard and mouse to in game actions
 void AplayerChar::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -99,6 +181,8 @@ void AplayerChar::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAction("sprint", IE_Pressed, this, &AplayerChar::Sprint);
 	PlayerInputComponent->BindAction("sprint", IE_Released, this, &AplayerChar::StopSprint);
 
+	PlayerInputComponent->BindAction("RotPart", IE_Pressed, this, &AplayerChar::rotateBuilding);
+
 
 	// these binds detects if "A,D,W,S" is pressed (moveLeftRight & moveForwardBackward can be renamed in project input settings)
 	PlayerInputComponent->BindAxis("moveRight", this, &AplayerChar::MoveRight);
@@ -112,6 +196,24 @@ void AplayerChar::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Sets up the movement for the player and takes in a value
 void AplayerChar::MoveForward(float InputValue)
 {
@@ -124,6 +226,21 @@ void AplayerChar::MoveForward(float InputValue)
 	AddMovementInput(moveForward, InputValue);
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // Sets up the movement for the player and takes in a value
@@ -140,6 +257,20 @@ void AplayerChar::MoveRight(float InputValue)
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Sets up the movement for the camera and takes in a value
 void AplayerChar::CameraTurn(float InputValue)
 {
@@ -148,6 +279,23 @@ void AplayerChar::CameraTurn(float InputValue)
 	AddControllerYawInput(InputValue);
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // Sets up the movement for the camera and takes in a value
@@ -160,6 +308,23 @@ void AplayerChar::CameraUp(float InputValue)
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Sets walk speed to running speed
 void AplayerChar::Sprint()
 {
@@ -168,6 +333,23 @@ void AplayerChar::Sprint()
 	
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // Sets walk speed to walk speed once shift is released
@@ -179,11 +361,32 @@ void AplayerChar::StopSprint()
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Creates a line trace for object to player interaction
 void AplayerChar::interact()
 {
 
-	// Checks the camera to makes sure its not null which could crash UE
+
+
+
+
+
+	// Checks the camera to make sure it's not null which could crash UE
 	if (!Camera)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Camera is null!"));
@@ -191,107 +394,312 @@ void AplayerChar::interact()
 	}
 
 
+
+
+
+
 	// Gets the object that was hit by the line trace
 	FHitResult HitResult;
-
 
 	// Gets the starting location of the line trace which is the camera
 	FVector StartLocation = Camera->GetComponentLocation();
 
-
 	// Shoots the line trace from the starting point forward
 	FVector Direction = Camera->GetForwardVector() * 800.0f;
-
 
 	// Gets the end point of the line trace
 	FVector EndLocation = StartLocation + Direction;
 
-
 	// Creates the collision queries of the line trace on what to hit
 	FCollisionQueryParams QueryParams;
 
-
-	// Makes sure teh line trace ignores the player character "this"
+	// Makes sure the line trace ignores the player character "this"
 	QueryParams.AddIgnoredActor(this);
-
 
 	// Makes the collision
 	QueryParams.bTraceComplex = true;
+	QueryParams.bReturnFaceIndex = true;
 
 
-	// Creaes the detection of the line trace and gives back the result
-	if (GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Visibility, QueryParams))
+
+
+
+
+
+
+
+	if (!isBuilding)
 	{
-
-		// Get the actor that was hit with the line trace
-		AActor* HitActor = HitResult.GetActor();
-
-
-		// Gives error that the object is not eligible for line trace 
-		if (!HitActor)
+		// Creates the detection of the line trace and gives back the result
+		if (GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Visibility, QueryParams))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("HitResult does not contain a valid actor."));
-			return;
-		}
+			AresourceMaster* HitResource = Cast<AresourceMaster>(HitResult.GetActor());
 
-
-		// If eligible then display the object hit in the log
-		UE_LOG(LogTemp, Warning, TEXT("Line trace hit actor: %s"), *HitActor->GetName());
-
-
-		// Makes sure that the actor is or object hit by line trace is apart of the resourceMaster class 
-		AresourceMaster* HitResrouce = Cast<AresourceMaster>(HitActor);
-		if (!HitResrouce)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Hit actor is not of type AresourceMaster."));
-			return;
-		}
-
-
-		// Checks the targets resource amount of the object hit and if valid
-		if (HitResrouce->resourceAmount <= 0 || HitResrouce->TotalResourceAmount <= 0)
-		{
-			UE_LOG(LogTemp, Error, TEXT("Invalid resource data: resourceAmount: %d, TotalResourceAmount: %d"),
-				HitResrouce->resourceAmount,
-				HitResrouce->TotalResourceAmount);
-			return;
-		}
-
-
-		// Gets the name of the resouce
-		FString hitName = HitResrouce->resourceName;
-
-
-		// Gets the resource amount
-		int resourceValue = HitResrouce->resourceAmount;
-
-
-		// Gets the total resource amount and subtracts by the value
-		HitResrouce->TotalResourceAmount -= resourceValue;
-
-
-		// Checks to make sure the resource has some left
-		if (HitResrouce->TotalResourceAmount > 0)
-		{
-			GiveResources(resourceValue, hitName);
-			if (GEngine)
+			if (Stamina > 5.0f)
 			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, TEXT("Resource Collected"));
+				if(HitResource)
+				{
+					FString hitName = HitResource->resourceName;
+					int resourceValue = HitResource->resourceAmount;
+					HitResource->TotalResourceAmount = HitResource->TotalResourceAmount - resourceValue;
+
+					if (HitResource->TotalResourceAmount > resourceValue)
+					{
+						GiveResources(resourceValue, hitName);
+
+						matsCollected = matsCollected + resourceValue;
+						objWidget->updateMatObj(matsCollected);
+
+
+
+						check(GEngine != nullptr);
+						GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Resource Collected"));
+
+						UGameplayStatics::SpawnDecalAtLocation(GetWorld(), hitDecal, FVector(10.0f, 10.0f, 10.0f), HitResult.Location, FRotator(-90, 0, 0), 2.0f);
+
+						setStamina(-5.0f);
+					}
+					else
+					{
+						HitResource->Destroy();
+						check(GEngine != nullptr);
+						GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Resource Depleted"));
+
+					}
+				}
+
 			}
-		}
-		else
-		{
-			// Once the resource runs out then delte the object
-			UE_LOG(LogTemp, Warning, TEXT("Resource depleted. Destroying actor."));
-			HitResrouce->Destroy();
-			return;
 		}
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Line trace did not hit anything."));
+		isBuilding = false;
+
+
+		objectsBuild = objectsBuild + 1.0f;
+		objWidget->updateBuildObj(objectsBuild);
+	}
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Makes sure the right resources are added to the array in the correct resource
+
+void AplayerChar::GiveResources(float amount, FString resourceType)
+{
+	if (resourceType == "Wood")
+	{
+		resourceArray[0] = resourceArray[0] + amount;
+	}
+	if (resourceType == "Stone")
+	{
+		resourceArray[1] = resourceArray[1] + amount;
+	}
+	if (resourceType == "Berry")
+	{
+		resourceArray[2] = resourceArray[2] + amount;
+	}
+
+}
+
+
+
+
+
+
+
+
+
+
+void AplayerChar::updateResources(float wood, float stone, FString buildingObject)
+{
+	if (wood <= resourceArray[0])
+	{
+		if (stone <= resourceArray[1])
+		{
+			resourceArray[0] = resourceArray[0] - wood;
+			resourceArray[1] = resourceArray[1] - stone;
+
+			if (buildingObject == "Wall")
+			{
+				buildingArray[0] = buildingArray[0] + 1;
+			}
+			if (buildingObject == "Floor")
+			{
+				buildingArray[1] = buildingArray[1] + 1;
+			}
+			if (buildingObject == "Ceiling")
+			{
+				buildingArray[2] = buildingArray[2] + 1;
+			}
+		}
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+void AplayerChar::spawnBuilding(int buildingID, bool& isSuccess)
+{
+	if (!isBuilding)
+	{
+		if (buildingArray[buildingID] >= 1)
+		{
+			isBuilding = true;
+			FActorSpawnParameters SpawnParams;
+			FVector StartLocation = Camera->GetComponentLocation();
+			FVector Direction = Camera->GetForwardVector() * 400.0f;
+			FVector EndLoication = StartLocation + Direction;
+			FRotator myRot(0, 0, 0);
+
+			buildingArray[buildingID] = buildingArray[buildingID] - 1;
+			spawnedPart = GetWorld()->SpawnActor<AbuildingPart>(buildingPartClass, EndLoication, myRot, SpawnParams);
+			isSuccess = true;
+		}
+		isSuccess = false;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void AplayerChar::rotateBuilding()
+{
+	if (spawnedPart)
+	{
+		spawnedPart->AddActorWorldRotation(FRotator(0, 90, 0));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("rotateBuilding called but spawnedPart is nullptr!"));
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+void AplayerChar::setHealth(float amount)
+{
+	if (Health + amount < 100)
+	{
+		Health = Health + amount;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void AplayerChar::setHunger(float amount)
+{
+	if (Hunger + amount < 100)
+	{
+		Hunger = Hunger + amount;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void AplayerChar::setStamina(float amount)
+{
+	if (Stamina + amount <= 100)
+	{
+		Stamina = Stamina + amount;
+	}
+}
+
+
+
+
+
+
+
+
+
 
 
 
@@ -300,85 +708,33 @@ void AplayerChar::interact()
 // Created the hunger timer functions that is aattached to the player
 void AplayerChar::HungerTimer()
 {
-
-	// Adds 1 to the TimerCount which is set to 0 in the header file
-	TimerCount++;
-
-
-	// If the count is greater than or equal to 1 start decreaseing hunger by 10
-	if (TimerCount >= 5)
+	if (Hunger > 0)
 	{
-		Hunger -= 10;
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, FString::Printf(TEXT("Player Hunger: %.2f"), Hunger));
+		setHunger(-1.0f);
+
 	}
 
+	setStamina(10.0f);
 
 	if (Hunger <= 0)
 	{
-
-		// When hunger reaches 0. health decreases by 10.
-		Health -= 10;
-
-
-		// Displays health value for debugging reseaons
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Player Health: %.2f"), Health));
-
-
-		if (Health <= 0)
-		{
-
-			Destroy();
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Health reached 0 (YOU ARE DEAD)"), Health));
-
-		}
-
-		// When hunger reaches 0. stamina is reduced/set to 50 and then decreases by 10
-		Stamina -= 10;
-
-
-		// Displays stamina value for debugging reseaons
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("Player Stamina: %.2f"), Stamina));
-
-
+		setHealth(-3.0f);
 	}
 
-	
-	// If the player health is 0 then clear the timer/stop the timer
-	if(Health <= 0)
-	{
-
-		GetWorld()->GetTimerManager().ClearTimer(playerHungerTimer);
-
-	}
-
-}
 
 
-// Ends the timer
-void AplayerChar::EndPlay(const EEndPlayReason::Type EndPlayReason)
-{
-
-	Super::EndPlay(EndPlayReason);
 
 
-	GetWorld()->GetTimerManager().ClearTimer(playerHungerTimer);
-}
 
 
-// Makes sure the right resources are added to the array in the correct resource
-void AplayerChar::GiveResources(int amount, FString resourceType)
-{
-	if (resourceType == "Wood")
-	{
-		ResourceArray[0] = ResourceArray[0] + amount;
-	}
-	if (resourceType == "Stone")
-	{
-		ResourceArray[1] = ResourceArray[1] + amount;
-	}
-	if (resourceType == "Berry")
-	{
-		ResourceArray[2] = ResourceArray[2] + amount;
-	}
+
+
+
+
+
+
+
+
+
 
 }
