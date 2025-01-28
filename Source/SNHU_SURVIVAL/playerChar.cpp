@@ -22,37 +22,13 @@ AplayerChar::AplayerChar()
 	PrimaryActorTick.bCanEverTick = true;
 
 
-
-
-
-
-
-
-
-
-
 	// Create and set up camera component
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Player Camera"));
 	Camera->SetupAttachment(GetMesh(), TEXT("head"));
 	Camera->bUsePawnControlRotation = true;
 
-
-
-
-
-
-
-
-
-
-
-
 	// Improve air control for player
 	GetCharacterMovement()->AirControl = 1;
-
-
-
-
 
 
 	// Initialize ResourceNameArray
@@ -64,22 +40,9 @@ AplayerChar::AplayerChar()
 	ResourceNameArray[2] = TEXT("Berry");
 
 
-
-
-
 	// Initialize player attributes/stats
 	Health = 100.0f;
 	Stamina = 100.0f;
-
-
-
-
-
-
-
-
-
-
 
 
 	Hunger = 20.0f;
@@ -114,19 +77,7 @@ void AplayerChar::BeginPlay()
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+// updates the health bars every tick the game is running
 void AplayerChar::Tick(float DeltaTime)
 {
 
@@ -134,6 +85,8 @@ void AplayerChar::Tick(float DeltaTime)
 
 	playerUI->updateBars(Health, Hunger, Stamina);
 
+
+	// places the object the player built and places at endlocation
 	if (isBuilding)
 	{
 		if (spawnedPart)
@@ -146,21 +99,6 @@ void AplayerChar::Tick(float DeltaTime)
 	}
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 // This function binds the user input from the keyboard and mouse to in game actions
@@ -198,22 +136,6 @@ void AplayerChar::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // Sets up the movement for the player and takes in a value
 void AplayerChar::MoveForward(float InputValue)
 {
@@ -226,20 +148,6 @@ void AplayerChar::MoveForward(float InputValue)
 	AddMovementInput(moveForward, InputValue);
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -257,20 +165,6 @@ void AplayerChar::MoveRight(float InputValue)
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // Sets up the movement for the camera and takes in a value
 void AplayerChar::CameraTurn(float InputValue)
 {
@@ -279,23 +173,6 @@ void AplayerChar::CameraTurn(float InputValue)
 	AddControllerYawInput(InputValue);
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 // Sets up the movement for the camera and takes in a value
@@ -308,23 +185,6 @@ void AplayerChar::CameraUp(float InputValue)
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // Sets walk speed to running speed
 void AplayerChar::Sprint()
 {
@@ -333,23 +193,6 @@ void AplayerChar::Sprint()
 	
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 // Sets walk speed to walk speed once shift is released
@@ -361,30 +204,9 @@ void AplayerChar::StopSprint()
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // Creates a line trace for object to player interaction
 void AplayerChar::interact()
 {
-
-
-
-
-
 
 	// Checks the camera to make sure it's not null which could crash UE
 	if (!Camera)
@@ -392,10 +214,6 @@ void AplayerChar::interact()
 		UE_LOG(LogTemp, Error, TEXT("Camera is null!"));
 		return;
 	}
-
-
-
-
 
 
 	// Gets the object that was hit by the line trace
@@ -419,14 +237,6 @@ void AplayerChar::interact()
 	// Makes the collision
 	QueryParams.bTraceComplex = true;
 	QueryParams.bReturnFaceIndex = true;
-
-
-
-
-
-
-
-
 
 	if (!isBuilding)
 	{
@@ -480,46 +290,26 @@ void AplayerChar::interact()
 		objWidget->updateBuildObj(objectsBuild);
 	}
 
-
-
-
-
-
-
-
 }
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // Makes sure the right resources are added to the array in the correct resource
-
 void AplayerChar::GiveResources(float amount, FString resourceType)
 {
+	// Adds wood to index 0 in array
 	if (resourceType == "Wood")
 	{
 		resourceArray[0] = resourceArray[0] + amount;
 	}
+
+	// Adds stones to index 1 in array
 	if (resourceType == "Stone")
 	{
 		resourceArray[1] = resourceArray[1] + amount;
 	}
+
+	// Adds berrys to index 2 in array
 	if (resourceType == "Berry")
 	{
 		resourceArray[2] = resourceArray[2] + amount;
@@ -528,23 +318,20 @@ void AplayerChar::GiveResources(float amount, FString resourceType)
 }
 
 
-
-
-
-
-
-
-
-
+// This function subtracts from players resources when item built
 void AplayerChar::updateResources(float wood, float stone, FString buildingObject)
 {
+	// checks the stone inventory within array
 	if (wood <= resourceArray[0])
 	{
+		// checks the stone inventory within array
 		if (stone <= resourceArray[1])
 		{
+			// subtracts the resources from array
 			resourceArray[0] = resourceArray[0] - wood;
 			resourceArray[1] = resourceArray[1] - stone;
 
+			// increases item array by 1
 			if (buildingObject == "Wall")
 			{
 				buildingArray[0] = buildingArray[0] + 1;
@@ -561,24 +348,14 @@ void AplayerChar::updateResources(float wood, float stone, FString buildingObjec
 	}
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
+// This function spawns in object that wants to be built in world
 void AplayerChar::spawnBuilding(int buildingID, bool& isSuccess)
 {
 	if (!isBuilding)
 	{
 		if (buildingArray[buildingID] >= 1)
 		{
+			// Creates a line trace and p[laces item ahead of player
 			isBuilding = true;
 			FActorSpawnParameters SpawnParams;
 			FVector StartLocation = Camera->GetComponentLocation();
@@ -586,6 +363,7 @@ void AplayerChar::spawnBuilding(int buildingID, bool& isSuccess)
 			FVector EndLoication = StartLocation + Direction;
 			FRotator myRot(0, 0, 0);
 
+			// Gets the item that corresponds within the array
 			buildingArray[buildingID] = buildingArray[buildingID] - 1;
 			spawnedPart = GetWorld()->SpawnActor<AbuildingPart>(buildingPartClass, EndLoication, myRot, SpawnParams);
 			isSuccess = true;
@@ -596,23 +374,7 @@ void AplayerChar::spawnBuilding(int buildingID, bool& isSuccess)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// Function makes crafted item rotate 90 degrees
 void AplayerChar::rotateBuilding()
 {
 	if (spawnedPart)
@@ -627,40 +389,19 @@ void AplayerChar::rotateBuilding()
 
 
 
-
-
-
-
-
-
-
-
-
+// Sets up the player health status and increases when eligible
 void AplayerChar::setHealth(float amount)
 {
-	if (Health + amount < 100)
+	if (Health + amount <= 100)
 	{
 		Health = Health + amount;
 	}
+
+
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// Sets up the player hunger status and increases when eligible
 void AplayerChar::setHunger(float amount)
 {
 	if (Hunger + amount < 100)
@@ -671,19 +412,7 @@ void AplayerChar::setHunger(float amount)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+// Sets up the player stamina status and increases when eligible
 void AplayerChar::setStamina(float amount)
 {
 	if (Stamina + amount <= 100)
@@ -693,19 +422,7 @@ void AplayerChar::setStamina(float amount)
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-// Created the hunger timer functions that is aattached to the player
+// Created the hunger timer this function decreases hunger oveer time
 void AplayerChar::HungerTimer()
 {
 	if (Hunger > 0)
@@ -720,21 +437,5 @@ void AplayerChar::HungerTimer()
 	{
 		setHealth(-3.0f);
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 }

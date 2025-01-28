@@ -47,24 +47,8 @@ public:
 		class UCameraComponent* Camera;
 
 
-
-
-
-
-
-
 	UFUNCTION()
 		void GiveResources(float amount, FString resourceType);
-
-
-
-
-
-
-
-
-
-
 
 
 	// CREATES resources and inentory
@@ -82,11 +66,6 @@ public:
 		int Berry;
 
 
-
-
-
-
-
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 		UobjectiveWidget* objWidget;
 
@@ -97,12 +76,6 @@ public:
 		float matsCollected;
 
 
-
-
-
-
-
-
 	// Creates the array that takes an INT and string
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "resources")
 		TArray<int> resourceArray;
@@ -110,21 +83,6 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "resources")
 		TArray<FString> ResourceNameArray;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 	// Created playerCharacter attributes and stats.
@@ -153,28 +111,13 @@ public:
 		// END PLAYER ATTRIBUTES/STATS
 
 
-
-
-
-
-
-
-
 	UPROPERTY(EditAnywhere, Category = "HitMarker")
 		UMaterialInterface* hitDecal;
 
-
-
-
-
-
-
-
-		// Building Array to store info and attributes
-
+	// Building Array to store info and attributes
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Building Supplies")
 		TArray<int> buildingArray;
-
+	// creates a boolean
 	UPROPERTY()
 		bool isBuilding;
 
@@ -185,60 +128,19 @@ public:
 		AbuildingPart* spawnedPart;
 
 
-
-
-
-
+	// creates property to be used in UE5
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		UplayerWidget* playerUI;
-
-
-
-
-
-
-
 
 
     // Calls the functions and takes in a value from the mouse and called it InputValue
 	void CameraTurn(float InputValue);
 	void CameraUp(float InputValue);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	// Calls the functions 
 	void Sprint();
 	void StopSprint();
 	void interact();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 	// Calls the functions and takes in a value from the keyboard and called it InputValue
@@ -247,21 +149,7 @@ public:
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	// building functions
+	// creates building functions
 	UFUNCTION(BlueprintCallable)
 		void updateResources(float woodAmount, float stoneAmount, FString buildingObject);
 
@@ -273,23 +161,7 @@ public:
 		void rotateBuilding();
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-		
+	// creates the stamina, health and hunger functions		
 	UFUNCTION(BlueprintCallable)
 		void setHealth(float amount);
 
@@ -300,19 +172,9 @@ public:
 		void setStamina(float amount);
 
 
-
-
-
-
-
 	// calls the timer function
 	UFUNCTION(BlueprintCallable)
 		void HungerTimer();
-
-
-	// stops the timer handle when game ends
-	//virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
 
 
 };
