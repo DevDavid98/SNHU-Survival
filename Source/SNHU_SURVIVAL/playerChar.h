@@ -39,12 +39,18 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 
-	// adds the camera component to the playerActor
-	// UPROPERTY makes the camera able to moved anywhere
-
-
+	//player character components.	
 	UPROPERTY(EditAnywhere)
 		class UCameraComponent* Camera;
+
+	UPROPERTY(EditAnywhere)
+		class UStaticMeshComponent* playerWeapon;
+
+	UPROPERTY(EditAnywhere)
+		class UArrowComponent* projectileArrow;
+
+	UPROPERTY(EditAnywhere)
+		class USpringArmComponent* springArm;
 
 
 	UFUNCTION()
@@ -64,6 +70,13 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "resources")
 		int Berry;
+
+
+	UPROPERTY()
+		bool isAttacking;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		bool hasWeapon;
 
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
@@ -141,6 +154,8 @@ public:
 	void Sprint();
 	void StopSprint();
 	void interact();
+	void Attack();
+	void StopAttack();
 
 
 	// Calls the functions and takes in a value from the keyboard and called it InputValue
@@ -176,6 +191,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void HungerTimer();
 
+	UFUNCTION(BlueprintCallable)
+		void isArmed(bool isEquipped);
 
 };
 

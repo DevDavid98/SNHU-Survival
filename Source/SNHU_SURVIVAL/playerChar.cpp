@@ -1,9 +1,13 @@
 // playerChar header is needed to run the CPP file
 #include "playerChar.h"
+#include "pickupMaster.h"
 
 
 // There is a camera needed to play the game so a cam component was added
 #include "Camera/CameraComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Components/ArrowComponent.h"
+#include "GameFrameWork/SpringArmComponent.h"
 
 
 // Gets the character movement component to edit air control
@@ -20,12 +24,24 @@
 AplayerChar::AplayerChar()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	// Create and set up camera component.springarm component
+	springArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Camera Boom"));
+	springArm->SetupAttachment(RootComponent);
 
-
-	// Create and set up camera component
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Player Camera"));
-	Camera->SetupAttachment(GetMesh(), TEXT("head"));
+	Camera->SetupAttachment(springArm);
 	Camera->bUsePawnControlRotation = true;
+
+
+	playerWeapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Player Weapon"));
+	playerWeapon->SetupAttachment(GetMesh(), TEXT("hand_r_axe"));
+
+	projectileArrow = CreateDefaultSubobject<UArrowComponent>(TEXT("Projectile Arrow"));
+	projectileArrow->SetupAttachment(playerWeapon, TEXT("muzzle"));
+
+
+	// Add axe to player mesh and to hand socket
+
 
 	// Improve air control for player
 	GetCharacterMovement()->AirControl = 1;
@@ -47,7 +63,10 @@ AplayerChar::AplayerChar()
 
 	Hunger = 20.0f;
 	walkingSpeed = 600.0f;
-	runningSpeed = 1000.0f;
+	runningSpeed = 1150.0f;
+
+	isAttacking = false;
+	hasWeapon = false;
 
 }
 
@@ -114,6 +133,9 @@ void AplayerChar::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 	//Binded the letter E to the player controls and function called interact
 	PlayerInputComponent->BindAction("interact", IE_Pressed, this, &AplayerChar::interact);
+	//Binded the left mouse button to player contorls
+	PlayerInputComponent->BindAction("Attack", IE_Pressed, this, &AplayerChar::Attack);
+	PlayerInputComponent->BindAction("Attack", IE_Released, this, &AplayerChar::StopAttack);
 
 
 	PlayerInputComponent->BindAction("sprint", IE_Pressed, this, &AplayerChar::Sprint);
@@ -279,7 +301,22 @@ void AplayerChar::interact()
 				}
 
 			}
+			
+			// HERE
+			if (ApickupMaster* Pickup = Cast<ApickupMaster>(HitResult.GetActor()))
+			{
+				if (Pickup->bPlayerInRange)
+				{
+					Pickup->OnInteractedBy(this);
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("You're too far away to pick this up."));
+				}
+			}
 		}
+
+		DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Green, false, 1.0f, 0, 1.0f);
 	}
 	else
 	{
@@ -438,4 +475,41 @@ void AplayerChar::HungerTimer()
 		setHealth(-3.0f);
 	}
 
+}
+
+
+
+//checks if player has weapons
+void AplayerChar::isArmed(bool isEquipped){
+
+	hasWeapon = isEquipped;
+
+	if (isEquipped == true)
+	{
+		//enter weapon ready animations
+		UE_LOG(LogTemp, Warning, TEXT("I HAVE WEAPON NOW ENTER ATTACK STANCE"));
+	
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("I DON'T HAVE WEAPON, STAY IN IDLE"));
+	}
+
+
+}
+
+
+
+//Attack functions
+void AplayerChar::Attack(){
+	isAttacking = true;
+	UE_LOG(LogTemp, Warning, TEXT("ATTACK"));
+
+	//play animtion if attack button is clicked
+
+}
+
+void AplayerChar::StopAttack(){
+	isAttacking = false;
+	UE_LOG(LogTemp, Warning, TEXT("STOP ATTACK"));
 }
