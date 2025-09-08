@@ -72,8 +72,11 @@ public:
 		int Berry;
 
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		bool isAttacking;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		bool isAiming;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		bool hasWeapon;
@@ -193,6 +196,11 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 		void isArmed(bool isEquipped);
+
+	UFUNCTION(BlueprintCallable)
+		void Aim();
+	UFUNCTION(BlueprintCallable)
+		void notAim();
 
 };
 

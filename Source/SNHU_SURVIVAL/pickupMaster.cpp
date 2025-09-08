@@ -2,6 +2,7 @@
 
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "GameFramework/RotatingMovementComponent.h"
 #include "playerChar.h"
 #include "pickupMaster.h"
 
@@ -10,11 +11,15 @@ ApickupMaster::ApickupMaster()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
 	WeaponCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Weapon Capsule"));
 	RootComponent = WeaponCapsule;
 
 	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Weapon Mesh"));
 	WeaponMesh->SetupAttachment(WeaponCapsule);
+
+	rotatePickup = CreateDefaultSubobject<URotatingMovementComponent>(TEXT("Rotate Pickup"));
+	rotatePickup->RotationRate = FRotator(0.f, 180.f, 0.f);
 
 	WeaponCapsule->OnComponentBeginOverlap.AddDynamic(this, &ApickupMaster::OnOverlapBegin);
 	

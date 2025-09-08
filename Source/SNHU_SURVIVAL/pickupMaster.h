@@ -4,7 +4,7 @@
 
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
-
+#include "GameFramework/RotatingMovementComponent.h"
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -32,6 +32,10 @@ public:
 		UCapsuleComponent* WeaponCapsule;
 	UPROPERTY(EditAnywhere)
 		UStaticMeshComponent* WeaponMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		URotatingMovementComponent* rotatePickup;
+
 
 	UPROPERTY()
 		bool bPlayerInRange;

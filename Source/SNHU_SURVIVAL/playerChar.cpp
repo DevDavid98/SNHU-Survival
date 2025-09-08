@@ -67,6 +67,7 @@ AplayerChar::AplayerChar()
 
 	isAttacking = false;
 	hasWeapon = false;
+	isAiming = false;
 
 }
 
@@ -136,6 +137,10 @@ void AplayerChar::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	//Binded the left mouse button to player contorls
 	PlayerInputComponent->BindAction("Attack", IE_Pressed, this, &AplayerChar::Attack);
 	PlayerInputComponent->BindAction("Attack", IE_Released, this, &AplayerChar::StopAttack);
+
+	//Binded the right mouse button to player contorls
+	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &AplayerChar::Aim);
+	PlayerInputComponent->BindAction("Aim", IE_Released, this, &AplayerChar::notAim);
 
 
 	PlayerInputComponent->BindAction("sprint", IE_Pressed, this, &AplayerChar::Sprint);
@@ -512,4 +517,18 @@ void AplayerChar::Attack(){
 void AplayerChar::StopAttack(){
 	isAttacking = false;
 	UE_LOG(LogTemp, Warning, TEXT("STOP ATTACK"));
+}
+
+//Aim functions
+void AplayerChar::Aim() {
+	isAiming = true;
+	UE_LOG(LogTemp, Warning, TEXT("ENTER AIM STANCE"));
+
+	//play animtion if attack button is clicked
+
+}
+
+void AplayerChar::notAim() {
+	isAiming = false;
+	UE_LOG(LogTemp, Warning, TEXT("EXIT AIM STANCE"));
 }
